@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Sales Order Screen</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1>Sales Order</h1>
+    <div id="brandSelection">
+      <label for="brand">Select Brand:</label>
+      <select id="brand" name="brand">
+        <option value="all">All Brands</option>
+        <option value="ari">Ariel</option>
+        <option value="pam">Pampers</option>
+        <option value="alw">Always</option>
+      </select>
+    </div>
+    <div id="searchFilter">
+      <label for="search">Search:</label>
+      <input type="text" id="search" name="search" placeholder="Enter search keyword">
+    </div>
+
+    let products=[{"id":1,"name":"Ariel  unitPrice-30","unitPrice":30,"weight":"1kg","quantity":0},{"id":2,"name":"Tide unitPrice-25","unitPrice":25,"weight":"1kg","quantity":0},{"id":3,"name":"Colgate unitPrice-20","unitPrice":20,"weight":"100g","quantity":0},{"id":4,"name":"Dove unitPrice-10","unitPrice":10,"weight":"200ml","quantity":0},{"id":5,"name":"Kellogs unitPrice-15","unitPrice":15,"weight":"500g","quantity":0},{"id":6,"name":"Lipton Green unitPrice-8","unitPrice":8,"weight":"50bags","quantity":0},{"id":7,"name":"Diapers unitPrice-40","unitPrice":40,"weight":"50 pieces","quantity":0},{"id":8,"name":"Nivea unitPrice-12","unitPrice":12,"weight":"250ml","quantity":0},{"id":9,"name":"Head&Shoulder unitPrice-15","unitPrice":15,"weight":"400ml","quantity":0},{"id":10,"name":"Oreo unitPrice-3","unitPrice":3,"weight":"100g","quantity":0},{"id":11,"name":"Pringles unitPrice-4","unitPrice":4,"weight":"500ml","quantity":0},{"id":12,"name":"Peanut unitPrice-6","unitPrice":6,"weight":"500g","quantity":0}]
+    <table id="itemList">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Unit Price</th>
+          <th>Order Quantity</th>
+          <th>Net Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Ariel 2kg</td>
+          <td>30</td>
+          <td><input type="number" class="order-quantity" value="0" min="0" data-unit-price="30"></td>
+          <td class="net-value" value="0" min="0"></td>
+        </tr>
+        <tr>
+          <td>Ariel 400g</td>
+          <td>28</td>
+          <td><input type="number" class="order-quantity" value="0" min="0" data-unit-price="28"></td>
+          <td class="net-value"></td>
+        </tr>
+        <tr>
+          <td>Ariel 900g</td>
+          <td>75</td>
+          <td><input type="number" class="order-quantity" value="0" min="0" data-unit-price="75"></td>
+          <td class="net-value"></td>
+        </tr>
+        <tr>
+          <td>Ariel ls 1kg</td>
+          <td>114</td>
+          <td><input type="number" class="order-quantity" value="0" min="0" data-unit-price="114"></td>
+          <td class="net-value"></td>
+        </tr>
+        <tr>
+          <td>Ariel ls 2kg</td>
+          <td>428</td>
+          <td><input type="number" class="order-quantity" value="0" min="0" data-unit-price="428"></td>
+          <td class="net-value"></td>
+        </tr>
+        <tr>
+          <td>Blue 2 plus</td>
+          <td>18</td>
+          <td><input type="number" class="order-quantity" value="0" min="0" data-unit-price="18"></td>
+          <td class="net-value"></td>
+        </tr>
+        <tr>
+          <td>Ariel ls 1.5kg</td>
+          <td>520</td>
+          <td><input type="number" class="order-quantity" value="0" min="0" data-unit-price="520"></td>
+          <td class="net-value"></td>
+        </tr>
+        <tr>
+          <td>Ariel ls 500g</td>
+          <td>24</td>
+          <td><input type="number" class="order-quantity" value="0" min="0" data-unit-price="24"></td>
+          <td class="net-value"></td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="total-lines">
+          <td colspan="3">Total Lines:</td>
+          <td id="totalLinesValue"></td>
+        </tr>
+        <tr class="net-value">
+          <td colspan="2">Total Net Value:</td>
+          <td id="netValue"></td>
+        </tr>
+        <tr id="promotionDiscount">
+          <td colspan="2">Promotion Discount:</td>
+          <td>$<span id="promotionDiscountValue">0.00</span></td>
+        </tr>
+        <tr class="applied-promotions">
+          <td colspan="3">Applied Promotions:</td>
+          <td id="appliedPromotions"></td>
+        </tr>
+      </tfoot>
+    </table>
+
+  </div>
+  <div>
+    Discount: <input type="text" id="myText" value="Promotions">
+    <button onclick="applyPromotions()">Apply Promotions</button>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    document.getElementById("brand").addEventListener("change", function () {
+      var selectedBrand = this.value;
+      var itemList = document.querySelectorAll("#itemList tbody tr");
+
+      // Show/hide items based on brand selection
+      itemList.forEach(function (item) {
+        var brand = item.cells[0].textContent.trim().toLowerCase().substring(0, 3);
+        if (selectedBrand === "all" || selectedBrand === brand) {
+          item.style.display = "";
+        } else {
+          item.style.display = "none";
+        }
+      });
+
+      // Recalculate and update total lines, total net value, and total price
+      updateTotals();
+    });
+
+    // Search filter
+    document.getElementById("search").addEventListener("input", function () {
+      var keyword = this.value.toLowerCase();
+      var itemList = document.querySelectorAll("#itemList tbody tr");
+
+      // Filter items based on search keyword
+      itemList.forEach(function (item) {
+        var itemName = item.cells[0].textContent.trim().toLowerCase();
+        if (itemName.includes(keyword)) {
+          item.style.display = "";
+        } else {
+          item.style.display = "none";
+        }
+      });
+
+      // Recalculate and update total lines, total net value, and total price
+      updateTotals();
+    });
+
+    // Calculate net value on order quantity change
+    document.querySelectorAll(".order-quantity").forEach(function (input) {
+      input.addEventListener("input", function () {
+        var orderQty = parseInt(this.value) || 0;
+        var unitPrice = parseFloat(this.dataset.unitPrice);
+        var netValue = orderQty * unitPrice;
+
+        // Update net value
+        var netValueCell = this.parentNode.nextElementSibling;
+        netValueCell.textContent = netValue.toFixed(2);
+
+        // Recalculate and update total lines, total net value, and total price
+        updateTotals();
+      });
+    });
+
+    // Update total lines, total net value, and total price
+    function updateTotals() {
+      var visibleItems = document.querySelectorAll("#itemList tbody tr:not(.hide)");
+      var totalLines = 0;
+      var totalNetValue = 0;
+
+      visibleItems.forEach(function (item) {
+        var orderQty = parseInt(item.querySelector(".order-quantity").value) || 0;
+          
+        var unitPrice = parseFloat(item.querySelector(".order-quantity").dataset.unitPrice);
+           var netValue=orderQty*unitPrice;
+
+        totalLines += orderQty>0?1:0;
+        totalNetValue += netValue;
+      });
+
+      document.getElementById("totalLinesValue").textContent = totalLines;
+      document.getElementById("netValue").textContent = totalNetValue.toFixed(2);
+    }
+
+    // Apply promotions
+   function applyPromotions() {
+  var netValue = parseFloat(document.getElementById("netValue").textContent);
+  var promotionDiscount = 0;
+  var appliedPromotions = "";
+
+  // Check if total amount is between 1000 and 1999
+  if (netValue >= 1000 && netValue <= 1999) {
+    promotionDiscount = netValue * 0.05; // 5% discount
+    appliedPromotions = "5% off for total between $1000 and $1999";
+  }
+
+  // Check if total amount is between 2000 and 2999
+  if (netValue >= 2000 && netValue <= 2999) {
+    promotionDiscount = netValue * 0.1; // 10% discount
+    appliedPromotions = "10% off for total between $2000 and $2999";
+  }
+
+  // Check bundle promotion
+  var items = document.getElementsByClassName("order-quantity");
+  var selectedBrands = [];
+  var lowestPrice = Infinity;
+
+  for (var i = 0; i < items.length; i++) {
+    var brand = items[i].parentNode.parentNode.cells[0].textContent.trim().toLowerCase();
+    var price = parseFloat(items[i].dataset.unitPrice);
+
+    if (items[i].value > 0 && selectedBrands.indexOf(brand) === -1) {
+      selectedBrands.push(brand);
+      if (price < lowestPrice) {
+        lowestPrice = price;
+      }
+    }
+  }
+
+  if (selectedBrands.length >= 2 && lowestPrice !== Infinity) {
+    promotionDiscount += lowestPrice;
+    appliedPromotions += " | Bundle Promotion: Get one item with the lower price for free";
+  }
+
+  // Check instant percentage discount for buying multiple items
+  for (var i = 0; i < items.length; i++) {
+    var quantity = parseInt(items[i].value);
+    var price = parseFloat(items[i].dataset.unitPrice);
+    
+    if (quantity >= 2) {
+      var itemDiscount = price * 0.05; // 5% discount
+      promotionDiscount += itemDiscount * quantity;
+      appliedPromotions += " | Instant Promotion: " + quantity + " items at 5% discount each";
+    }
+  }
+
+  // Check instant amount discount for buying multiple items
+  for (var i = 0; i < items.length; i++) {
+    var quantity = parseInt(items[i].value);
+    var price = parseFloat(items[i].dataset.unitPrice);
+    
+    if (quantity >= 2) {
+      var itemDiscount = 10; // Rs. 10 discount per item
+      promotionDiscount += itemDiscount * quantity;
+      appliedPromotions += " | Instant Promotion: " + quantity + " items with Rs. 10 discount each";
+    }
+  }
+
+  document.getElementById("promotionDiscountValue").textContent = promotionDiscount.toFixed(2);
+  document.getElementById("appliedPromotions").textContent = appliedPromotions;
+
+  var discountedNetValue = netValue - promotionDiscount;
+  document.getElementById("netValue").textContent = discountedNetValue.toFixed(2);
+}
+
+
+    updateTotals();
+  </script>
+</body>
+
+</html>
